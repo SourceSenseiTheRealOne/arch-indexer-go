@@ -10,7 +10,7 @@ The detailed implementation plan is maintained in the coding lab's local Hermes 
 - [x] Unit, race, vet, format, and build gates
 - [x] Architecture, security, and contributor rules
 - [x] Local repository foundation prepared for public bootstrap
-- [ ] Parent coding-lab submodule and registry registration
+- [x] Coding-lab-compatible project context and task ledgers
 
 ## Phase 2 — Canonical domain
 
