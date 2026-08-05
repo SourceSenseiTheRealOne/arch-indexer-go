@@ -1,0 +1,22 @@
+# Go
+/bin/
+/coverage/
+*.coverprofile
+
+# Local configuration and secrets
+.env
+.env.*
+!config/example.env
+
+# Local runtime state
+/codegraph/
+.codegraph/
+.prism-history.md
+/runtime/
+/reports/private/
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

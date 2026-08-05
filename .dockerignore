@@ -1,0 +1,9 @@
+.git
+.github
+.codegraph
+.env
+.env.*
+bin
+coverage
+runtime
+reports/private
