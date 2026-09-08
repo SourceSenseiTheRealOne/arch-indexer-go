@@ -6,12 +6,13 @@ Build a reusable, read-only Arch Network indexing engine. Keep protocol behavior
 
 ## Required workflow
 
-1. Read `README.md`, `docs/architecture.md`, and `docs/roadmap.md` before planning or editing.
+1. Read `context/README.md`, `context/stack.md`, all three task ledgers, `README.md`, `docs/architecture.md`, and `docs/roadmap.md` before planning or editing.
 2. Run `codegraph status .`; initialize or synchronize the child index explicitly.
 3. Use strict RED → GREEN → REFACTOR for behavioral code.
 4. Keep queues bounded, preserve deterministic ordering, and fail closed on incomplete blocks or immutable identity conflicts.
-5. Run `make verify` before reporting a slice complete.
-6. Do not commit, push, create remotes, or modify Bump unless Sensei explicitly authorizes it.
+5. Keep each task in exactly one of `context/QUEUE.md`, `context/IN_PROGRESS.md`, or `context/TASK_TRACKER.md` and reconcile the ledgers before handoff.
+6. Run `bash scripts/verify.sh` before reporting a slice complete.
+7. Do not commit, push, create remotes, or modify Bump unless Sensei explicitly authorizes it.
 
 ## Security boundaries
 
