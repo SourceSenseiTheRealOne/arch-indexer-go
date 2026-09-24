@@ -1,76 +1,58 @@
-# arch-indexer-go
+# Arch indexer in Go — foundation
 
-A reusable, read-only Arch Network indexing engine written in Go. Bump will be its first protocol adapter, but the engine core will remain protocol-neutral.
+An early-stage foundation for a read-only Arch Network indexer. The current executable checks process configuration; **block indexing is not implemented**. Bump is the intended first protocol adapter, not a dependency of the core or a completed production integration.
 
-## Status
+## Implemented
 
-Foundation scaffold only:
+- Required configuration fields, bounded timeouts and queue capacity, and a loopback metrics-address default.
+- A `--check-config` CLI with explicit success/configuration/usage exit codes and tests that connection strings are not printed.
+- Formatting, unit tests, race tests, `go vet` and a Linux build.
 
-- strict environment configuration with safe defaults and bounds;
-- a `--check-config` CLI tracer that never prints connection strings;
-- unit/race/vet/build quality gates;
-- architecture and phased roadmap documentation.
+The module currently uses the Go standard library only. PostgreSQL and Redis are planned runtime dependencies, not services this executable connects to.
 
-Block ingestion, persistence, Bump decoding, Redis delivery, health endpoints, and production integration are not implemented yet. The executable refuses to start an indexer runtime rather than pretending the scaffold is operational.
+## Try the configuration check
 
-## Architecture
-
-```text
-Arch JSON-RPC
-    |
-    v
-Read-only datasource
-    |
-    v
-Bounded canonical pipeline
-    |
-    v
-Compiled-in protocol adapters (Bump first)
-    |
-    v
-PostgreSQL canonical ledger + checkpoint + transactional outbox
-    |
-    v
-Recoverable at-least-once delivery (Redis first)
-```
-
-PostgreSQL will be authoritative. Redis will never own canonical state. No wallet, signer, or transaction-submission code belongs in this repository.
-
-See `docs/architecture.md` and `docs/roadmap.md`.
-
-## Requirements
-
-- Go 1.26.5 toolchain (the module can auto-select it through the Go toolchain directive)
-- Git
-- Docker Desktop later, for PostgreSQL/Redis integration slices
-
-## Configuration tracer
-
-The binary currently validates process configuration only:
+Use the Go toolchain declared in [`go.mod`](go.mod). These illustrative local values do not require running infrastructure:
 
 ```bash
-export DATABASE_URL='postgres://127.0.0.1:5432/arch_indexer?sslmode=disable'
-export REDIS_URL='redis://127.0.0.1:6379/0'
-export MANIFEST_PATH='deployments/local.json'
+DATABASE_URL='postgres://127.0.0.1:5432/arch_indexer?sslmode=disable' \
+REDIS_URL='redis://127.0.0.1:6379/0' \
+MANIFEST_PATH='deployments/local.json' \
 go run ./cmd/indexerd --check-config
 ```
 
-Expected output:
+Output:
 
 ```text
 configuration valid; indexer runtime is not started
 ```
 
-Running without `--check-config` exits with a usage error because ingestion is intentionally not implemented yet.
+This checks required values and configured bounds. It does not verify database/Redis connectivity, validate their URL syntax, read the manifest file or contact Arch RPC. The manifest path above is illustrative, not a supplied deployment manifest.
 
-## Quality gates
+The binary exits with code `64` when invoked without `--check-config`; it does not start an indexing daemon. Missing required configuration returns `78`. `go run` itself wraps nonzero program exits, so inspect the built binary when testing exact process codes.
+
+## Planned engine
+
+```text
+Arch read-only RPC → bounded pipeline → protocol adapters
+                    → PostgreSQL ledger + checkpoint + outbox
+                    → recoverable at-least-once delivery (Redis)
+```
+
+All components in this pipeline are planned. The design makes PostgreSQL authoritative, commits events and progress together, and keeps delivery recoverable. Reorg rollback, deterministic replay and immutable-event conflict checks still need implementation and behavioral proof.
+
+[Planned architecture](docs/architecture.md) · [Phased roadmap](docs/roadmap.md) · [Next work](context/QUEUE.md)
+
+## Verification
 
 ```bash
 bash scripts/verify.sh
 ```
 
-On hosts with GNU Make, `make verify` delegates to the same script. The script recursively checks formatting, runs native unit and race tests, runs `go vet`, and cross-builds the deployable Linux artifact at `bin/indexerd-linux-amd64`. Override `BUILD_GOOS` and `BUILD_GOARCH` only for an explicitly reviewed deployment target.
+The verifier checks formatting, unit/race tests and vet, then builds `bin/indexerd-linux-amd64`. Race tests require CGO and a C compiler; the Linux artifact itself is built with CGO disabled. Use a Go-equipped Linux container if the host lacks the race-test toolchain. A passing foundation verifier does not establish ingestion or recovery correctness.
 
-## Repository state
+## Boundaries
 
-The public repository uses `development`, `staging`, and `main` environment branches. New work targets `development`; promotion to `staging` and `main` requires reviewed pull requests. Parent-lab registration, Bump integration, and production configuration are separate gated changes.
+No wallets, signing, transaction submission or generic RPC-call surface belong in this project. Public-network checks and any Bump integration require separate approval and evidence. There is no live demo or deployed-indexer claim.
+
+The canonical Lab checkout is `projects/experiments/arch/indexer-go`; the GitHub repository and Go module remain `arch-indexer-go`. Work targets `development`, followed by reviewed `staging` and `main` promotions.
