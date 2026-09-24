@@ -1,4 +1,6 @@
-# Architecture
+# Planned architecture
+
+This is the target design, not an inventory of running components. Only process-configuration checks and the CLI tracer are implemented. The datasource, canonical pipeline, adapters, PostgreSQL store, outbox and transport are planned work; see the [implementation roadmap](roadmap.md).
 
 ## Objective
 
